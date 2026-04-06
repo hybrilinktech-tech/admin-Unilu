@@ -2,7 +2,7 @@ const CACHE_NAME = 'compta-fac-v1';
 const urlsToCache = [
   '/',
   'index.html',
-   'login-doyen.html',
+  
   'https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css',
   'https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css',
   'https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js',
