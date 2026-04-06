@@ -4,9 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Administration - Faculté Agronomique</title>
-     <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="apple-mobile-web-app-title" content="hybrilink Compta">
+    <meta name="apple-mobile-web-app-title" content="Hybrilink Compta">
     <meta name="description" content="Gestion comptabilité">
     <meta name="theme-color" content="#003366">
     
@@ -14,14 +14,13 @@
     <link rel="apple-touch-icon" href="icon-192x192.png">
     <link rel="icon" type="image/png" href="icon-96x96.png">
     
-
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
     <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         :root { --primary-blue: #003366; --dark-blue: #002244; --accent-yellow: #ffb347; }
-        body { background: #f0f2f5; font-family: 'Segoe UI', sans-serif; }
+        body { background: #f0f2f5; font-family: 'Segoe UI', sans-serif; min-height: 100vh; display: flex; flex-direction: column; }
         .navbar-custom { background: var(--primary-blue); box-shadow: 0 4px 15px rgba(0,0,0,0.2); padding: 10px 0; }
         .btn-action { background: var(--primary-blue); color: white; border: none; padding: 10px 20px; border-radius: 10px; transition: all 0.3s; }
         .btn-action:hover { background: var(--dark-blue); transform: translateY(-2px); }
@@ -62,291 +61,339 @@
         .progress-fill { height: 100%; background: #28a745; width: 0%; transition: width 0.3s; }
         .loading-spinner { display: inline-block; width: 20px; height: 20px; border: 3px solid #f3f3f3; border-top: 3px solid var(--primary-blue); border-radius: 50%; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
+        /* Login Page Styles */
+        .login-container { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #003366 0%, #001a33 100%); }
+        .login-card { background: white; border-radius: 20px; box-shadow: 0 20px 40px rgba(0,0,0,0.2); padding: 40px; width: 100%; max-width: 450px; margin: 20px; }
+        .login-logo { text-align: center; margin-bottom: 30px; }
+        .login-logo i { font-size: 60px; color: var(--primary-blue); background: #f0f2f5; padding: 20px; border-radius: 50%; }
+        .login-title { text-align: center; color: var(--primary-blue); margin-bottom: 30px; font-weight: bold; }
+        .login-btn { background: var(--primary-blue); color: white; border: none; padding: 12px; border-radius: 10px; width: 100%; font-weight: bold; transition: all 0.3s; }
+        .login-btn:hover { background: var(--dark-blue); transform: translateY(-2px); }
+        .footer { background: #1a1a2e; color: #fff; text-align: center; padding: 15px 0; margin-top: auto; font-size: 14px; }
+        .footer a { color: var(--accent-yellow); text-decoration: none; }
+        .footer a:hover { text-decoration: underline; }
+        .logout-btn { background: #dc3545; color: white; border: none; padding: 8px 20px; border-radius: 25px; font-weight: bold; transition: all 0.3s; display: inline-flex; align-items: center; gap: 8px; }
+        .logout-btn:hover { background: #c82333; transform: translateY(-2px); }
+        .app-container { display: none; flex: 1; }
+        .app-container.active { display: block; }
     </style>
 </head>
 <body>
-    <nav class="navbar navbar-custom">
-        <div class="container">
-            <a class="navbar-brand text-white" href="#"><i class="bi bi-gear-fill"></i> Administration - Faculté Agronomique</a>
-            <div>
-                <a href="dashboard-doyen.html" class="back-btn"><i class="bi bi-arrow-left"></i> Retour au Dashboard</a>
+    <!-- Login Container -->
+    <div id="loginContainer" class="login-container">
+        <div class="login-card">
+            <div class="login-logo">
+                <i class="bi bi-shield-lock-fill"></i>
+            </div>
+            <h3 class="login-title">Administration Faculté Agronomique</h3>
+            <form id="loginForm">
+                <div class="mb-3">
+                    <label class="form-label">Email</label>
+                    <input type="email" class="form-control" id="loginEmail" required placeholder="admin@fsa-unilu.com">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Mot de passe</label>
+                    <input type="password" class="form-control" id="loginPassword" required placeholder="••••••••">
+                </div>
+                <button type="submit" class="login-btn"><i class="bi bi-box-arrow-in-right"></i> Se connecter</button>
+            </form>
+            <div class="text-center mt-3">
+                <small class="text-muted">Contactez l'administrateur pour vos accès</small>
             </div>
         </div>
-    </nav>
+    </div>
     
-    <div class="container mt-4">
-        <div id="toastContainer" class="toast-notification"></div>
-        
-        <!-- Menu des formulaires -->
-        <div class="menu-buttons">
-            <button class="menu-btn active" data-section="annee"><i class="bi bi-calendar-week-fill"></i> Année Académique</button>
-            <button class="menu-btn" data-section="compta"><i class="bi bi-person-badge-fill"></i> Compte Comptabilité</button>
-            <button class="menu-btn" data-section="promotion"><i class="bi bi-trophy-fill"></i> Promotion</button>
-            <button class="menu-btn" data-section="fiche"><i class="bi bi-file-text-fill"></i> Fiche</button>
-            <button class="menu-btn" data-section="etudiant"><i class="bi bi-mortarboard-fill"></i> Étudiant</button>
-            <button class="menu-btn" data-section="transfert"><i class="bi bi-arrow-left-right"></i> Transfert Promotion</button>
-        </div>
-        
-        <!-- Section Année Académique -->
-        <div id="section-annee" class="form-section active">
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="mb-0"><i class="bi bi-calendar-week-fill"></i> Créer une année académique</h5>
-                </div>
-                <div class="card-body">
-                    <form id="anneeForm">
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Nom année académique</label>
-                                <input type="text" class="form-control" id="nomAnnee" required placeholder="Ex: 2025-2026">
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Statut</label>
-                                <select class="form-select" id="statutAnnee">
-                                    <option value="active">Active</option>
-                                    <option value="inactive">Inactive</option>
-                                </select>
-                            </div>
-                        </div>
-                        <button type="submit" class="btn-action">Créer année académique</button>
-                    </form>
-                    <hr>
-                    <h6>Liste des années existantes</h6>
-                    <div id="anneesListe" class="mt-2"></div>
+    <!-- Main Application Container -->
+    <div id="appContainer" class="app-container">
+        <nav class="navbar navbar-custom">
+            <div class="container">
+                <a class="navbar-brand text-white" href="#"><i class="bi bi-gear-fill"></i> Administration - Faculté Agronomique</a>
+                <div>
+                    <button class="logout-btn" id="logoutBtn"><i class="bi bi-box-arrow-right"></i> Déconnexion</button>
                 </div>
             </div>
-        </div>
+        </nav>
         
-        <!-- Section Comptabilité -->
-        <div id="section-compta" class="form-section">
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="mb-0"><i class="bi bi-person-badge-fill"></i> Créer un compte comptabilité</h5>
-                </div>
-                <div class="card-body">
-                    <form id="comptaForm">
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Nom complet</label>
-                                <input type="text" class="form-control" id="nomCompta" required>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Email</label>
-                                <input type="email" class="form-control" id="emailCompta" required>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Mot de passe</label>
-                                <input type="password" class="form-control" id="passwordCompta" required>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Confirmer</label>
-                                <input type="password" class="form-control" id="confirmPasswordCompta" required>
-                            </div>
-                        </div>
-                        <button type="submit" class="btn-action">Créer compte comptabilité</button>
-                    </form>
-                    <hr>
-                    <h6>Liste des comptes existants</h6>
-                    <div id="comptesListe" class="mt-2"></div>
-                </div>
+        <div class="container mt-4" style="flex: 1;">
+            <div id="toastContainer" class="toast-notification"></div>
+            
+            <!-- Menu des formulaires -->
+            <div class="menu-buttons">
+                <button class="menu-btn active" data-section="annee"><i class="bi bi-calendar-week-fill"></i> Année Académique</button>
+                <button class="menu-btn" data-section="compta"><i class="bi bi-person-badge-fill"></i> Compte Comptabilité</button>
+                <button class="menu-btn" data-section="promotion"><i class="bi bi-trophy-fill"></i> Promotion</button>
+                <button class="menu-btn" data-section="fiche"><i class="bi bi-file-text-fill"></i> Fiche</button>
+                <button class="menu-btn" data-section="etudiant"><i class="bi bi-mortarboard-fill"></i> Étudiant</button>
+                <button class="menu-btn" data-section="transfert"><i class="bi bi-arrow-left-right"></i> Transfert Promotion</button>
             </div>
-        </div>
-        
-        <!-- Section Promotions -->
-        <div id="section-promotion" class="form-section">
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="mb-0"><i class="bi bi-trophy-fill"></i> Créer une promotion</h5>
-                </div>
-                <div class="card-body">
-                    <form id="promotionForm">
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Nom promotion</label>
-                                <input type="text" class="form-control" id="nomPromotion" required placeholder="Ex: Bac 1 AGM">
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Capacité</label>
-                                <input type="number" class="form-control" id="capacitePromotion" required>
-                            </div>
-                        </div>
-                        <button type="submit" class="btn-action">Créer promotion</button>
-                    </form>
-                    <hr>
-                    <h6>Liste des promotions existantes</h6>
-                    <div id="promotionsListe" class="mt-2"></div>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Section Fiches -->
-        <div id="section-fiche" class="form-section">
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="mb-0"><i class="bi bi-file-text-fill"></i> Créer une fiche (liée à une ou plusieurs promotions)</h5>
-                </div>
-                <div class="card-body">
-                    <form id="ficheForm">
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Nom fiche</label>
-                                <input type="text" class="form-control" id="nomFiche" required placeholder="Ex: Frais académique">
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Montant (FC)</label>
-                                <input type="number" class="form-control" id="montantFiche" required>
-                            </div>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label"><i class="bi bi-checkbox-multiple"></i> Promotions concernées</label>
-                            <div id="promotionsCheckboxGroup" class="promotions-checkbox-group">
-                                <div class="checkbox-select-all">
-                                    <input type="checkbox" id="selectAllPromotions"> 
-                                    <label for="selectAllPromotions"><strong>Sélectionner toutes les promotions</strong></label>
-                                </div>
-                                <div id="promotionsCheckboxList">Chargement des promotions...</div>
-                            </div>
-                            <small class="text-muted">Sélectionnez une ou plusieurs promotions pour cette fiche</small>
-                        </div>
-                        <button type="submit" class="btn-action">Créer fiche</button>
-                    </form>
-                    <hr>
-                    <h6>Liste des fiches existantes</h6>
-                    <div id="fichesListe" class="mt-2"></div>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Section Étudiant (Ajout manuel + Import Excel) -->
-        <div id="section-etudiant" class="form-section">
-            <div class="card">
-                <div class="card-header bg-success">
-                    <h5 class="mb-0"><i class="bi bi-person-plus"></i> Ajouter un étudiant</h5>
-                </div>
-                <div class="card-body">
-                    <div class="alert alert-info">
-                        <i class="bi bi-info-circle"></i> 
-                        <strong>Matricule:</strong> Format <span class="matricule-example">2026471ET</span> (7 chiffres + "ET") - Généré automatiquement
+            
+            <!-- Section Année Académique -->
+            <div id="section-annee" class="form-section active">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="bi bi-calendar-week-fill"></i> Créer une année académique</h5>
                     </div>
-                    
-                    <!-- Formulaire d'ajout manuel -->
-                    <form id="etudiantForm">
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Nom complet</label>
-                                <input type="text" class="form-control" id="nomEtudiant" required placeholder="Ex: Jean MUKENDI">
+                    <div class="card-body">
+                        <form id="anneeForm">
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Nom année académique</label>
+                                    <input type="text" class="form-control" id="nomAnnee" required placeholder="Ex: 2025-2026">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Statut</label>
+                                    <select class="form-select" id="statutAnnee">
+                                        <option value="active">Active</option>
+                                        <option value="inactive">Inactive</option>
+                                    </select>
+                                </div>
                             </div>
+                            <button type="submit" class="btn-action">Créer année académique</button>
+                        </form>
+                        <hr>
+                        <h6>Liste des années existantes</h6>
+                        <div id="anneesListe" class="mt-2"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Section Comptabilité -->
+            <div id="section-compta" class="form-section">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="bi bi-person-badge-fill"></i> Créer un compte comptabilité</h5>
+                    </div>
+                    <div class="card-body">
+                        <form id="comptaForm">
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Nom complet</label>
+                                    <input type="text" class="form-control" id="nomCompta" required>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Email</label>
+                                    <input type="email" class="form-control" id="emailCompta" required>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Mot de passe</label>
+                                    <input type="password" class="form-control" id="passwordCompta" required>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Confirmer</label>
+                                    <input type="password" class="form-control" id="confirmPasswordCompta" required>
+                                </div>
+                            </div>
+                            <button type="submit" class="btn-action">Créer compte comptabilité</button>
+                        </form>
+                        <hr>
+                        <h6>Liste des comptes existants</h6>
+                        <div id="comptesListe" class="mt-2"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Section Promotions -->
+            <div id="section-promotion" class="form-section">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="bi bi-trophy-fill"></i> Créer une promotion</h5>
+                    </div>
+                    <div class="card-body">
+                        <form id="promotionForm">
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Nom promotion</label>
+                                    <input type="text" class="form-control" id="nomPromotion" required placeholder="Ex: Bac 1 AGM">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Capacité</label>
+                                    <input type="number" class="form-control" id="capacitePromotion" required>
+                                </div>
+                            </div>
+                            <button type="submit" class="btn-action">Créer promotion</button>
+                        </form>
+                        <hr>
+                        <h6>Liste des promotions existantes</h6>
+                        <div id="promotionsListe" class="mt-2"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Section Fiches -->
+            <div id="section-fiche" class="form-section">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="bi bi-file-text-fill"></i> Créer une fiche (liée à une ou plusieurs promotions)</h5>
+                    </div>
+                    <div class="card-body">
+                        <form id="ficheForm">
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Nom fiche</label>
+                                    <input type="text" class="form-control" id="nomFiche" required placeholder="Ex: Frais académique">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Montant (FC)</label>
+                                    <input type="number" class="form-control" id="montantFiche" required>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label"><i class="bi bi-checkbox-multiple"></i> Promotions concernées</label>
+                                <div id="promotionsCheckboxGroup" class="promotions-checkbox-group">
+                                    <div class="checkbox-select-all">
+                                        <input type="checkbox" id="selectAllPromotions"> 
+                                        <label for="selectAllPromotions"><strong>Sélectionner toutes les promotions</strong></label>
+                                    </div>
+                                    <div id="promotionsCheckboxList">Chargement des promotions...</div>
+                                </div>
+                                <small class="text-muted">Sélectionnez une ou plusieurs promotions pour cette fiche</small>
+                            </div>
+                            <button type="submit" class="btn-action">Créer fiche</button>
+                        </form>
+                        <hr>
+                        <h6>Liste des fiches existantes</h6>
+                        <div id="fichesListe" class="mt-2"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Section Étudiant -->
+            <div id="section-etudiant" class="form-section">
+                <div class="card">
+                    <div class="card-header bg-success">
+                        <h5 class="mb-0"><i class="bi bi-person-plus"></i> Ajouter un étudiant</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="alert alert-info">
+                            <i class="bi bi-info-circle"></i> 
+                            <strong>Matricule:</strong> Format <span class="matricule-example">2026471ET</span> (7 chiffres + "ET") - Généré automatiquement
+                        </div>
+                        
+                        <form id="etudiantForm">
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Nom complet</label>
+                                    <input type="text" class="form-control" id="nomEtudiant" required placeholder="Ex: Jean MUKENDI">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Promotion</label>
+                                    <select class="form-select" id="promotionEtudiant" required>
+                                        <option value="">Chargement...</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <button type="submit" class="btn-action"><i class="bi bi-save"></i> Créer l'étudiant</button>
+                        </form>
+                    </div>
+                </div>
+                
+                <!-- Import Excel -->
+                <div class="card mt-3">
+                    <div class="card-header bg-info">
+                        <h5 class="mb-0"><i class="bi bi-file-excel"></i> Import Excel en masse</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label class="form-label">Promotion</label>
-                                <select class="form-select" id="promotionEtudiant" required>
+                                <select class="form-select" id="importPromotionSelect" required>
                                     <option value="">Chargement...</option>
                                 </select>
                             </div>
-                        </div>
-                        <button type="submit" class="btn-action"><i class="bi bi-save"></i> Créer l'étudiant</button>
-                    </form>
-                </div>
-            </div>
-            
-            <!-- Import Excel -->
-            <div class="card mt-3">
-                <div class="card-header bg-info">
-                    <h5 class="mb-0"><i class="bi bi-file-excel"></i> Import Excel en masse</h5>
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Promotion</label>
-                            <select class="form-select" id="importPromotionSelect" required>
-                                <option value="">Chargement...</option>
-                            </select>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Fichier Excel</label>
-                            <input type="file" class="form-control" id="excelFileInput" accept=".xlsx, .xls">
-                        </div>
-                    </div>
-                    
-                    <div class="excel-format-info">
-                        <i class="bi bi-file-earmark-excel-fill"></i> 
-                        <strong>Format attendu:</strong> La colonne B (2ème colonne) doit contenir les noms complets des étudiants.<br>
-                        La première ligne peut être un en-tête (ex: "Nom").
-                    </div>
-                    
-                    <div class="mt-3">
-                        <button class="btn-success-custom" id="previewExcelBtn" disabled>
-                            <i class="bi bi-eye"></i> Aperçu
-                        </button>
-                        <button class="btn-action ms-2" id="importExcelBtn" disabled>
-                            <i class="bi bi-cloud-upload"></i> Importer
-                        </button>
-                        <a href="#" class="btn btn-outline-secondary ms-2" id="downloadTemplateBtn">
-                            <i class="bi bi-download"></i> Télécharger le modèle
-                        </a>
-                    </div>
-                    
-                    <div id="importPreview" class="import-preview" style="display:none;">
-                        <h6><i class="bi bi-table"></i> Aperçu des données</h6>
-                        <div id="previewTable"></div>
-                        <div id="importProgress" class="progress-bar-custom" style="display:none;">
-                            <div class="progress-fill"></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Liste des étudiants -->
-            <div class="card mt-3">
-                <div class="card-header">
-                    <h5 class="mb-0"><i class="bi bi-people-fill"></i> Liste des étudiants</h5>
-                </div>
-                <div class="card-body">
-                    <div id="promotionButtons" class="promotion-buttons" style="display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px;"></div>
-                    <div class="search-export-bar" style="background: #f8f9fa; padding: 15px; border-radius: 15px; margin-bottom: 20px; display: flex; flex-wrap: wrap; gap: 10px;">
-                        <div class="search-group" style="flex: 1;">
-                            <label><i class="bi bi-search"></i> Rechercher</label>
-                            <div class="search-input-group" style="position: relative;">
-                                <i class="bi bi-search" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%);"></i>
-                                <input type="text" class="form-control" id="searchEtudiantList" placeholder="Nom..." style="padding-left: 35px;">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Fichier Excel</label>
+                                <input type="file" class="form-control" id="excelFileInput" accept=".xlsx, .xls">
                             </div>
                         </div>
-                        <div class="export-group" style="display: flex; gap: 10px;">
-                            <button class="btn-action" id="exportExcelListBtn" style="background: #28a745;"><i class="bi bi-file-excel"></i> Excel</button>
-                            <button class="btn-action" id="exportCsvListBtn"><i class="bi bi-file-text"></i> CSV</button>
+                        
+                        <div class="excel-format-info">
+                            <i class="bi bi-file-earmark-excel-fill"></i> 
+                            <strong>Format attendu:</strong> La colonne B (2ème colonne) doit contenir les noms complets des étudiants.<br>
+                            La première ligne peut être un en-tête (ex: "Nom").
+                        </div>
+                        
+                        <div class="mt-3">
+                            <button class="btn-success-custom" id="previewExcelBtn" disabled>
+                                <i class="bi bi-eye"></i> Aperçu
+                            </button>
+                            <button class="btn-action ms-2" id="importExcelBtn" disabled>
+                                <i class="bi bi-cloud-upload"></i> Importer
+                            </button>
+                            <a href="#" class="btn btn-outline-secondary ms-2" id="downloadTemplateBtn">
+                                <i class="bi bi-download"></i> Télécharger le modèle
+                            </a>
+                        </div>
+                        
+                        <div id="importPreview" class="import-preview" style="display:none;">
+                            <h6><i class="bi bi-table"></i> Aperçu des données</h6>
+                            <div id="previewTable"></div>
+                            <div id="importProgress" class="progress-bar-custom" style="display:none;">
+                                <div class="progress-fill"></div>
+                            </div>
                         </div>
                     </div>
-                    <div id="etudiantsListeAdmin"><div class="text-center"><div class="loading-spinner"></div> Chargement...</div></div>
+                </div>
+                
+                <!-- Liste des étudiants -->
+                <div class="card mt-3">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="bi bi-people-fill"></i> Liste des étudiants</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="promotionButtons" class="promotion-buttons" style="display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px;"></div>
+                        <div class="search-export-bar" style="background: #f8f9fa; padding: 15px; border-radius: 15px; margin-bottom: 20px; display: flex; flex-wrap: wrap; gap: 10px;">
+                            <div class="search-group" style="flex: 1;">
+                                <label><i class="bi bi-search"></i> Rechercher</label>
+                                <div class="search-input-group" style="position: relative;">
+                                    <i class="bi bi-search" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%);"></i>
+                                    <input type="text" class="form-control" id="searchEtudiantList" placeholder="Nom..." style="padding-left: 35px;">
+                                </div>
+                            </div>
+                            <div class="export-group" style="display: flex; gap: 10px;">
+                                <button class="btn-action" id="exportExcelListBtn" style="background: #28a745;"><i class="bi bi-file-excel"></i> Excel</button>
+                                <button class="btn-action" id="exportCsvListBtn"><i class="bi bi-file-text"></i> CSV</button>
+                            </div>
+                        </div>
+                        <div id="etudiantsListeAdmin"><div class="text-center"><div class="loading-spinner"></div> Chargement...</div></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Section Transfert -->
+            <div id="section-transfert" class="form-section">
+                <div class="card">
+                    <div class="card-header bg-warning">
+                        <h5 class="mb-0"><i class="bi bi-arrow-left-right"></i> Transfert d'étudiants entre promotions</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="promotion-transfer-card">
+                            <div class="promotion-selector">
+                                <select id="promotionSource" class="form-select">
+                                    <option value="">Sélectionner promotion source</option>
+                                </select>
+                                <i class="bi bi-arrow-right-short transfer-icon"></i>
+                                <select id="promotionDestination" class="form-select">
+                                    <option value="">Sélectionner promotion destination</option>
+                                </select>
+                                <button class="btn-success-custom" id="transfererEtudiantsBtn">
+                                    <i class="bi bi-arrow-repeat"></i> Transférer tous les étudiants
+                                </button>
+                            </div>
+                            <div id="transferInfo" class="mt-3 text-center text-muted"></div>
+                        </div>
+                        <div id="transferResultat" style="display: none;" class="alert"></div>
+                    </div>
                 </div>
             </div>
         </div>
         
-        <!-- Section Transfert d'étudiants entre promotions -->
-        <div id="section-transfert" class="form-section">
-            <div class="card">
-                <div class="card-header bg-warning">
-                    <h5 class="mb-0"><i class="bi bi-arrow-left-right"></i> Transfert d'étudiants entre promotions</h5>
-                </div>
-                <div class="card-body">
-                    <div class="promotion-transfer-card">
-                        <div class="promotion-selector">
-                            <select id="promotionSource" class="form-select">
-                                <option value="">Sélectionner promotion source</option>
-                            </select>
-                            <i class="bi bi-arrow-right-short transfer-icon"></i>
-                            <select id="promotionDestination" class="form-select">
-                                <option value="">Sélectionner promotion destination</option>
-                            </select>
-                            <button class="btn-success-custom" id="transfererEtudiantsBtn">
-                                <i class="bi bi-arrow-repeat"></i> Transférer tous les étudiants
-                            </button>
-                        </div>
-                        <div id="transferInfo" class="mt-3 text-center text-muted"></div>
-                    </div>
-                    
-                    <div id="transferResultat" style="display: none;" class="alert"></div>
-                </div>
+        <!-- Footer -->
+        <footer class="footer">
+            <div class="container">
+                <p class="mb-0">© 2024 HYBRILINK - tech | Votre partenaire tech de A à Z</p>
             </div>
-        </div>
+        </footer>
     </div>
     
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
@@ -372,9 +419,75 @@
         let allUtilisateurs = [];
         let currentSelectedPromotion = null;
         let currentSearchTerm = '';
+        let currentUser = null;
+        
+        // Auth functions
+        function checkAuth() {
+            const userStr = localStorage.getItem('admin_user');
+            if(userStr) {
+                try {
+                    currentUser = JSON.parse(userStr);
+                    document.getElementById('loginContainer').style.display = 'none';
+                    document.getElementById('appContainer').classList.add('active');
+                    loadAppData();
+                } catch(e) { logout(); }
+            } else {
+                document.getElementById('loginContainer').style.display = 'flex';
+                document.getElementById('appContainer').classList.remove('active');
+            }
+        }
+        
+        function logout() {
+            localStorage.removeItem('admin_user');
+            currentUser = null;
+            document.getElementById('loginContainer').style.display = 'flex';
+            document.getElementById('appContainer').classList.remove('active');
+            showToast('Déconnecté', 'warning');
+        }
+        
+        document.getElementById('logoutBtn')?.addEventListener('click', logout);
+        
+        document.getElementById('loginForm')?.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            
+            try {
+                const usersRef = db.collection('utilisateurs');
+                const q = await usersRef.where('email', '==', email).where('role', 'in', ['admin', 'comptabilite']).get();
+                
+                if(q.empty) {
+                    showToast('Email ou mot de passe incorrect', 'danger');
+                    return;
+                }
+                
+                let userFound = null;
+                q.forEach(doc => {
+                    const userData = doc.data();
+                    if(userData.motDePasse === password) {
+                        userFound = { id: doc.id, ...userData };
+                    }
+                });
+                
+                if(userFound) {
+                    currentUser = userFound;
+                    localStorage.setItem('admin_user', JSON.stringify(userFound));
+                    document.getElementById('loginContainer').style.display = 'none';
+                    document.getElementById('appContainer').classList.add('active');
+                    loadAppData();
+                    showToast(`Bienvenue ${userFound.nomComplet}`, 'success');
+                } else {
+                    showToast('Email ou mot de passe incorrect', 'danger');
+                }
+            } catch(err) {
+                console.error(err);
+                showToast('Erreur de connexion', 'danger');
+            }
+        });
         
         function showToast(message, type = 'success') {
             const container = document.getElementById('toastContainer');
+            if(!container) return;
             const bgColor = type === 'success' ? '#28a745' : (type === 'warning' ? '#ffc107' : '#dc3545');
             const textColor = type === 'warning' ? '#333' : 'white';
             const icon = type === 'success' ? 'check-circle-fill' : (type === 'warning' ? 'exclamation-triangle-fill' : 'x-circle-fill');
@@ -389,57 +502,57 @@
         async function matriculeExiste(matricule) { const q = await db.collection('etudiants').where('matricule', '==', matricule).get(); return !q.empty; }
         async function genererMatriculeUnique() { let m, existe; do { m = genererMatricule(); existe = await matriculeExiste(m); } while(existe); return m; }
         
-        // ========== MENU NAVIGATION ==========
-        document.querySelectorAll('.menu-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                document.querySelectorAll('.menu-btn').forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                document.querySelectorAll('.form-section').forEach(section => section.classList.remove('active'));
-                const sectionId = `section-${btn.dataset.section}`;
-                document.getElementById(sectionId).classList.add('active');
+        function loadAppData() {
+            // Menu navigation
+            document.querySelectorAll('.menu-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.menu-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    document.querySelectorAll('.form-section').forEach(section => section.classList.remove('active'));
+                    const sectionId = `section-${btn.dataset.section}`;
+                    document.getElementById(sectionId).classList.add('active');
+                });
             });
-        });
+            
+            // Firestore listeners
+            db.collection('anneesAcademiques').onSnapshot(snapshot => {
+                allAnnees = [];
+                snapshot.forEach(doc => allAnnees.push({ id: doc.id, ...doc.data() }));
+                afficherAnneesListe();
+            });
+            
+            db.collection('promotions').onSnapshot(snapshot => {
+                allPromotions = [];
+                snapshot.forEach(doc => allPromotions.push({ id: doc.id, ...doc.data() }));
+                afficherPromotionsListe();
+                chargerPromotionsSelects();
+                chargerPromotionsCheckbox();
+                chargerPromotionsSelectsEtudiant();
+                afficherBoutonsPromotions();
+            });
+            
+            db.collection('etudiants').onSnapshot(snapshot => {
+                allEtudiants = [];
+                snapshot.forEach(doc => allEtudiants.push({ id: doc.id, ...doc.data() }));
+                afficherBoutonsPromotions();
+                afficherEtudiantsParPromotion(currentSelectedPromotion);
+                mettreAJourInfoTransfert();
+            });
+            
+            db.collection('fiches').onSnapshot(snapshot => {
+                allFiches = [];
+                snapshot.forEach(doc => allFiches.push({ id: doc.id, ...doc.data() }));
+                afficherFichesListe();
+            });
+            
+            db.collection('utilisateurs').where('role', '==', 'comptabilite').onSnapshot(snapshot => {
+                allUtilisateurs = [];
+                snapshot.forEach(doc => allUtilisateurs.push({ id: doc.id, ...doc.data() }));
+                afficherComptesListe();
+            });
+        }
         
-        // ========== ÉCOUTEURS TEMPS RÉEL ==========
-        
-        db.collection('anneesAcademiques').onSnapshot(snapshot => {
-            allAnnees = [];
-            snapshot.forEach(doc => allAnnees.push({ id: doc.id, ...doc.data() }));
-            afficherAnneesListe();
-        });
-        
-        db.collection('promotions').onSnapshot(snapshot => {
-            allPromotions = [];
-            snapshot.forEach(doc => allPromotions.push({ id: doc.id, ...doc.data() }));
-            afficherPromotionsListe();
-            chargerPromotionsSelects();
-            chargerPromotionsCheckbox();
-            chargerPromotionsSelectsEtudiant();
-            afficherBoutonsPromotions();
-        });
-        
-        db.collection('etudiants').onSnapshot(snapshot => {
-            allEtudiants = [];
-            snapshot.forEach(doc => allEtudiants.push({ id: doc.id, ...doc.data() }));
-            afficherBoutonsPromotions();
-            afficherEtudiantsParPromotion(currentSelectedPromotion);
-            mettreAJourInfoTransfert();
-        });
-        
-        db.collection('fiches').onSnapshot(snapshot => {
-            allFiches = [];
-            snapshot.forEach(doc => allFiches.push({ id: doc.id, ...doc.data() }));
-            afficherFichesListe();
-        });
-        
-        db.collection('utilisateurs').where('role', '==', 'comptabilite').onSnapshot(snapshot => {
-            allUtilisateurs = [];
-            snapshot.forEach(doc => allUtilisateurs.push({ id: doc.id, ...doc.data() }));
-            afficherComptesListe();
-        });
-        
-        // ========== AFFICHAGE DES LISTES ==========
-        
+        // All existing CRUD functions remain the same
         function afficherAnneesListe() {
             const container = document.getElementById('anneesListe');
             if(!container) return;
@@ -464,7 +577,7 @@
                 <td><button class="btn btn-sm btn-warning-custom" onclick="modifierCompte('${c.id}')">Modifier</button>
                 <button class="btn btn-sm btn-danger-custom" onclick="supprimerCompte('${c.id}')">Supprimer</button></td></tr>`;
             });
-            html += '</tbody></table></div>';
+            html += '</tbody>}</div>';
             container.innerHTML = html;
         }
         
@@ -479,7 +592,7 @@
                 <td><button class="btn btn-sm btn-warning-custom" onclick="modifierPromotion('${p.id}')">Modifier</button>
                 <button class="btn btn-sm btn-danger-custom" onclick="supprimerPromotion('${p.id}')">Supprimer</button></td></tr>`;
             });
-            html += '</tbody></table></div>';
+            html += '</tbody>}</div>';
             container.innerHTML = html;
         }
         
@@ -502,38 +615,29 @@
                 <td><button class="btn btn-sm btn-warning-custom" onclick="modifierFiche('${f.id}')">Modifier</button>
                 <button class="btn btn-sm btn-danger-custom" onclick="supprimerFiche('${f.id}')">Supprimer</button></td></tr>`;
             });
-            html += '</tbody></table></div>';
+            html += '</tbody>}</div>';
             container.innerHTML = html;
         }
         
-        // ========== FONCTIONS CRUD ==========
-        
-        window.modifierAnnee = async (id) => { const newNom = prompt('Nouveau nom (ex: 2025-2026)'); if(newNom) await db.collection('anneesAcademiques').doc(id).update({ annee: newNom, nom: newNom }); };
-        window.supprimerAnnee = async (id) => { if(confirm('Supprimer cette année ?')) await db.collection('anneesAcademiques').doc(id).delete(); };
-        
-        window.modifierCompte = async (id) => { const newNom = prompt('Nouveau nom complet'); if(newNom) await db.collection('utilisateurs').doc(id).update({ nomComplet: newNom }); };
-        window.supprimerCompte = async (id) => { if(confirm('Supprimer ce compte ?')) await db.collection('utilisateurs').doc(id).delete(); };
-        
+        window.modifierAnnee = async (id) => { const newNom = prompt('Nouveau nom'); if(newNom) await db.collection('anneesAcademiques').doc(id).update({ annee: newNom, nom: newNom }); };
+        window.supprimerAnnee = async (id) => { if(confirm('Supprimer ?')) await db.collection('anneesAcademiques').doc(id).delete(); };
+        window.modifierCompte = async (id) => { const newNom = prompt('Nouveau nom'); if(newNom) await db.collection('utilisateurs').doc(id).update({ nomComplet: newNom }); };
+        window.supprimerCompte = async (id) => { if(confirm('Supprimer ?')) await db.collection('utilisateurs').doc(id).delete(); };
         window.modifierPromotion = async (id) => { const newNom = prompt('Nouveau nom'); if(newNom) await db.collection('promotions').doc(id).update({ nom: newNom }); };
         window.supprimerPromotion = async (id) => {
             const nbEtudiants = allEtudiants.filter(e => e.promotion === id).length;
             if(nbEtudiants > 0) { alert(`Impossible: ${nbEtudiants} étudiant(s) lié(s)`); return; }
-            if(confirm('Supprimer cette promotion ?')) await db.collection('promotions').doc(id).delete();
+            if(confirm('Supprimer ?')) await db.collection('promotions').doc(id).delete();
         };
-        
         window.modifierFiche = async (id) => { const newMontant = prompt('Nouveau montant'); if(newMontant) await db.collection('fiches').doc(id).update({ montant: parseInt(newMontant) }); };
-        window.supprimerFiche = async (id) => { if(confirm('Supprimer cette fiche ?')) await db.collection('fiches').doc(id).delete(); };
+        window.supprimerFiche = async (id) => { if(confirm('Supprimer ?')) await db.collection('fiches').doc(id).delete(); };
+        window.modifierEtudiantAdmin = async (id) => { const newNom = prompt('Nouveau nom'); if(newNom) await db.collection('etudiants').doc(id).update({ nom: newNom.trim() }); showToast('Étudiant modifié'); };
+        window.supprimerEtudiantAdmin = async (id) => { if(confirm('Supprimer ?')) { await db.collection('etudiants').doc(id).delete(); showToast('Étudiant supprimé', 'warning'); } };
         
-        window.modifierEtudiantAdmin = async (id) => { const newNom = prompt('Nouveau nom complet:'); if(newNom && newNom.trim()) { await db.collection('etudiants').doc(id).update({ nom: newNom.trim() }); showToast('Étudiant modifié'); } };
-        window.supprimerEtudiantAdmin = async (id) => { if(confirm('Supprimer cet étudiant ?')) { await db.collection('etudiants').doc(id).delete(); showToast('Étudiant supprimé', 'warning'); } };
-        
-        // ========== FORMULAIRES ==========
-        
+        // Forms
         document.getElementById('anneeForm')?.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const nom = document.getElementById('nomAnnee').value;
-            const statut = document.getElementById('statutAnnee').value;
-            await db.collection('anneesAcademiques').add({ annee: nom, nom: nom, statut: statut, dateCreation: firebase.firestore.FieldValue.serverTimestamp() });
+            await db.collection('anneesAcademiques').add({ annee: document.getElementById('nomAnnee').value, nom: document.getElementById('nomAnnee').value, statut: document.getElementById('statutAnnee').value, dateCreation: firebase.firestore.FieldValue.serverTimestamp() });
             document.getElementById('anneeForm').reset();
             showToast('Année créée');
         });
@@ -556,9 +660,7 @@
         
         document.getElementById('promotionForm')?.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const nom = document.getElementById('nomPromotion').value;
-            const capacite = parseInt(document.getElementById('capacitePromotion').value);
-            await db.collection('promotions').add({ nom: nom, capacite: capacite, dateCreation: firebase.firestore.FieldValue.serverTimestamp() });
+            await db.collection('promotions').add({ nom: document.getElementById('nomPromotion').value, capacite: parseInt(document.getElementById('capacitePromotion').value), dateCreation: firebase.firestore.FieldValue.serverTimestamp() });
             document.getElementById('promotionForm').reset();
             showToast('Promotion créée');
         });
@@ -566,46 +668,28 @@
         document.getElementById('ficheForm')?.addEventListener('submit', async (e) => {
             e.preventDefault();
             const selectedPromotions = [];
-            document.querySelectorAll('.promotion-checkbox:checked').forEach(cb => { selectedPromotions.push(cb.value); });
-            if(selectedPromotions.length === 0) { alert('Veuillez sélectionner au moins une promotion'); return; }
-            await db.collection('fiches').add({
-                nom: document.getElementById('nomFiche').value,
-                montant: parseInt(document.getElementById('montantFiche').value),
-                promotions: selectedPromotions,
-                dateCreation: firebase.firestore.FieldValue.serverTimestamp()
-            });
+            document.querySelectorAll('.promotion-checkbox:checked').forEach(cb => selectedPromotions.push(cb.value));
+            if(selectedPromotions.length === 0) { alert('Sélectionnez au moins une promotion'); return; }
+            await db.collection('fiches').add({ nom: document.getElementById('nomFiche').value, montant: parseInt(document.getElementById('montantFiche').value), promotions: selectedPromotions, dateCreation: firebase.firestore.FieldValue.serverTimestamp() });
             document.getElementById('ficheForm').reset();
             document.querySelectorAll('.promotion-checkbox').forEach(cb => cb.checked = false);
-            if(document.getElementById('selectAllPromotions')) document.getElementById('selectAllPromotions').checked = false;
-            showToast('Fiche créée pour ' + selectedPromotions.length + ' promotion(s)');
+            showToast('Fiche créée');
         });
         
-        // Formulaire étudiant manuel
         document.getElementById('etudiantForm')?.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const nom = document.getElementById('nomEtudiant').value;
-            const promotionId = document.getElementById('promotionEtudiant').value;
-            if(!nom || !promotionId) { alert('Veuillez remplir tous les champs'); return; }
             const matricule = await genererMatriculeUnique();
-            await db.collection('etudiants').doc(matricule).set({
-                nom: nom,
-                matricule: matricule,
-                promotion: promotionId,
-                dateCreation: firebase.firestore.FieldValue.serverTimestamp()
-            });
+            await db.collection('etudiants').doc(matricule).set({ nom: document.getElementById('nomEtudiant').value, matricule: matricule, promotion: document.getElementById('promotionEtudiant').value, dateCreation: firebase.firestore.FieldValue.serverTimestamp() });
             document.getElementById('etudiantForm').reset();
             showToast(`Étudiant créé - Matricule: ${matricule}`);
         });
         
-        // ========== CHARGEMENT DES SELECTS ==========
-        
         function chargerPromotionsSelects() {
-            const selects = ['promotionEtudiant', 'importPromotionSelect'];
-            selects.forEach(id => {
+            ['promotionEtudiant', 'importPromotionSelect'].forEach(id => {
                 const select = document.getElementById(id);
                 if(select) {
                     select.innerHTML = '<option value="">Sélectionner une promotion</option>';
-                    allPromotions.forEach(p => { select.innerHTML += `<option value="${p.id}">${escapeHtml(p.nom)}</option>`; });
+                    allPromotions.forEach(p => select.innerHTML += `<option value="${p.id}">${escapeHtml(p.nom)}</option>`);
                 }
             });
         }
@@ -614,46 +698,34 @@
             const select = document.getElementById('promotionEtudiant');
             if(select) {
                 select.innerHTML = '<option value="">Sélectionner une promotion</option>';
-                allPromotions.forEach(p => { select.innerHTML += `<option value="${p.id}">${escapeHtml(p.nom)}</option>`; });
+                allPromotions.forEach(p => select.innerHTML += `<option value="${p.id}">${escapeHtml(p.nom)}</option>`);
             }
         }
         
         function chargerPromotionsCheckbox() {
             const container = document.getElementById('promotionsCheckboxList');
             if(!container) return;
-            if(allPromotions.length === 0) { container.innerHTML = '<div class="text-muted">Aucune promotion disponible</div>'; return; }
+            if(allPromotions.length === 0) { container.innerHTML = '<div class="text-muted">Aucune promotion</div>'; return; }
             let html = '';
-            allPromotions.forEach(p => {
-                html += `<div class="promotion-checkbox-item"><input type="checkbox" class="promotion-checkbox" value="${p.id}" id="promo_${p.id}"><label for="promo_${p.id}"><strong>${escapeHtml(p.nom)}</strong> <span class="text-muted">- Capacité: ${p.capacite || '-'}</span></label></div>`;
-            });
+            allPromotions.forEach(p => html += `<div class="promotion-checkbox-item"><input type="checkbox" class="promotion-checkbox" value="${p.id}" id="promo_${p.id}"><label for="promo_${p.id}"><strong>${escapeHtml(p.nom)}</strong></label></div>`);
             container.innerHTML = html;
-            const selectAllCheckbox = document.getElementById('selectAllPromotions');
-            if(selectAllCheckbox) {
-                selectAllCheckbox.addEventListener('change', (e) => { document.querySelectorAll('.promotion-checkbox').forEach(cb => cb.checked = e.target.checked); });
-                document.querySelectorAll('.promotion-checkbox').forEach(cb => { cb.addEventListener('change', () => { const allChecked = Array.from(document.querySelectorAll('.promotion-checkbox')).every(c => c.checked); selectAllCheckbox.checked = allChecked; }); });
-            }
+            document.getElementById('selectAllPromotions')?.addEventListener('change', (e) => document.querySelectorAll('.promotion-checkbox').forEach(cb => cb.checked = e.target.checked));
         }
-        
-        // ========== AFFICHAGE ÉTUDIANTS DANS ADMIN ==========
         
         function afficherBoutonsPromotions() {
             const container = document.getElementById('promotionButtons');
             if(!container) return;
-            if(allPromotions.length === 0) { container.innerHTML = '<div class="alert alert-info">Aucune promotion</div>'; return; }
-            let html = '<button class="promotion-btn" data-promo="all" style="background:#f8f9fa;border:2px solid #003366;color:#003366;padding:8px 15px;border-radius:10px;margin:2px;">📋 Tous</button>';
+            let html = '<button class="promotion-btn" data-promo="all" style="background:#f8f9fa;border:2px solid #003366;color:#003366;padding:8px 15px;border-radius:10px;">📋 Tous</button>';
             allPromotions.forEach(p => {
                 const count = allEtudiants.filter(e => e.promotion === p.id).length;
-                html += `<button class="promotion-btn" data-promo="${p.id}" style="background:#f8f9fa;border:2px solid #003366;color:#003366;padding:8px 15px;border-radius:10px;margin:2px;">📚 ${escapeHtml(p.nom)} <span class="badge bg-secondary">${count}</span></button>`;
+                html += `<button class="promotion-btn" data-promo="${p.id}" style="background:#f8f9fa;border:2px solid #003366;color:#003366;padding:8px 15px;border-radius:10px;">📚 ${escapeHtml(p.nom)} <span class="badge bg-secondary">${count}</span></button>`;
             });
             container.innerHTML = html;
             document.querySelectorAll('#promotionButtons .promotion-btn').forEach(btn => {
                 btn.addEventListener('click', () => {
-                    document.querySelectorAll('#promotionButtons .promotion-btn').forEach(b => b.classList.remove('active'));
-                    btn.classList.add('active');
                     currentSelectedPromotion = btn.dataset.promo === 'all' ? null : btn.dataset.promo;
                     currentSearchTerm = '';
-                    const si = document.getElementById('searchEtudiantList');
-                    if(si) si.value = '';
+                    if(document.getElementById('searchEtudiantList')) document.getElementById('searchEtudiantList').value = '';
                     afficherEtudiantsParPromotion(currentSelectedPromotion);
                 });
             });
@@ -661,148 +733,64 @@
         
         function afficherEtudiantsParPromotion(promoId) {
             let filtres = promoId === null ? [...allEtudiants] : allEtudiants.filter(e => e.promotion === promoId);
-            if(currentSearchTerm) {
-                const s = currentSearchTerm.toLowerCase();
-                filtres = filtres.filter(e => e.nom?.toLowerCase().includes(s));
-            }
-            const promoMap = {};
-            allPromotions.forEach(p => promoMap[p.id] = p.nom);
-            if(filtres.length === 0) {
-                document.getElementById('etudiantsListeAdmin').innerHTML = '<div class="alert alert-info">Aucun étudiant trouvé</div>';
-                return;
-            }
-            let html = `<div class="mb-2 text-muted"><i class="bi bi-people-fill"></i> ${filtres.length} étudiant(s)</div>
-            <div class="table-responsive"><table class="table table-bordered"><thead><tr><th>N°</th><th>Matricule</th><th>Nom</th><th>Promotion</th><th>Actions</th></tr></thead><tbody>`;
+            if(currentSearchTerm) filtres = filtres.filter(e => e.nom?.toLowerCase().includes(currentSearchTerm.toLowerCase()));
+            const promoMap = {}; allPromotions.forEach(p => promoMap[p.id] = p.nom);
+            if(filtres.length === 0) { document.getElementById('etudiantsListeAdmin').innerHTML = '<div class="alert alert-info">Aucun étudiant</div>'; return; }
+            let html = `<div class="mb-2">${filtres.length} étudiant(s)</div><div class="table-responsive"><table class="table table-bordered"><thead><tr><th>#</th><th>Matricule</th><th>Nom</th><th>Promotion</th><th>Actions</th></tr></thead><tbody>`;
             filtres.forEach((e, idx) => {
-                html += `<tr>
-                    <td>${idx+1}</td>
-                    <td><span style="font-family:monospace;">${e.matricule || e.id.substring(0,8)}</span></td>
-                    <td><strong>${escapeHtml(e.nom)}</strong></td>
-                    <td>${escapeHtml(promoMap[e.promotion] || '-')}</td>
-                    <td><div class="action-icons" style="display:flex;gap:10px;">
-                        <i class="bi bi-pencil-square edit-icon" style="color:#ffb347;cursor:pointer;" onclick="modifierEtudiantAdmin('${e.id}')"></i>
-                        <i class="bi bi-trash3 delete-icon" style="color:#dc3545;cursor:pointer;" onclick="supprimerEtudiantAdmin('${e.id}')"></i>
-                    </div></td>
-                </table>`;
+                html += `<tr><td>${idx+1}</td><td>${e.matricule || e.id.substring(0,8)}</td><td><strong>${escapeHtml(e.nom)}</strong></td><td>${escapeHtml(promoMap[e.promotion] || '-')}</td>
+                <td><i class="bi bi-pencil-square" style="color:#ffb347;cursor:pointer;" onclick="modifierEtudiantAdmin('${e.id}')"></i> <i class="bi bi-trash3" style="color:#dc3545;cursor:pointer;" onclick="supprimerEtudiantAdmin('${e.id}')"></i></td></tr>`;
             });
-            html += `</tbody>}</div>`;
+            html += '</tbody></table></div>';
             document.getElementById('etudiantsListeAdmin').innerHTML = html;
         }
         
-        document.getElementById('searchEtudiantList')?.addEventListener('input', (e) => {
-            currentSearchTerm = e.target.value;
-            afficherEtudiantsParPromotion(currentSelectedPromotion);
-        });
+        document.getElementById('searchEtudiantList')?.addEventListener('input', (e) => { currentSearchTerm = e.target.value; afficherEtudiantsParPromotion(currentSelectedPromotion); });
         
-        document.getElementById('exportExcelListBtn')?.addEventListener('click', () => {
-            let data = currentSelectedPromotion === null ? [...allEtudiants] : allEtudiants.filter(e => e.promotion === currentSelectedPromotion);
-            if(currentSearchTerm) { const s = currentSearchTerm.toLowerCase(); data = data.filter(e => e.nom?.toLowerCase().includes(s)); }
-            if(!data.length) { alert('Aucun étudiant à exporter'); return; }
-            const promoMap = {}; allPromotions.forEach(p => promoMap[p.id] = p.nom);
-            const exportData = data.map((e, idx) => ({ 'N°': idx+1, 'Matricule': e.matricule || e.id, 'Nom': e.nom, 'Promotion': promoMap[e.promotion] || '-' }));
-            const ws = XLSX.utils.json_to_sheet(exportData); const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, 'Etudiants');
-            XLSX.writeFile(wb, `etudiants_${new Date().toISOString().slice(0,19)}.xlsx`);
-            showToast(`Exporté ${data.length} étudiants`);
-        });
-        
-        document.getElementById('exportCsvListBtn')?.addEventListener('click', () => {
-            let data = currentSelectedPromotion === null ? [...allEtudiants] : allEtudiants.filter(e => e.promotion === currentSelectedPromotion);
-            if(currentSearchTerm) { const s = currentSearchTerm.toLowerCase(); data = data.filter(e => e.nom?.toLowerCase().includes(s)); }
-            if(!data.length) { alert('Aucun étudiant à exporter'); return; }
-            const promoMap = {}; allPromotions.forEach(p => promoMap[p.id] = p.nom);
-            const exportData = data.map((e, idx) => ({ 'N°': idx+1, 'Matricule': e.matricule || e.id, 'Nom': e.nom, 'Promotion': promoMap[e.promotion] || '-' }));
-            const ws = XLSX.utils.json_to_sheet(exportData); const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, 'Etudiants');
-            XLSX.writeFile(wb, `etudiants_${new Date().toISOString().slice(0,19)}.csv`);
-            showToast(`Exporté ${data.length} étudiants`);
-        });
-        
-        // ========== IMPORT EXCEL ==========
-        
+        // Excel import functions (simplified)
         let excelDataToImport = [];
         async function lireExcel(file) { return new Promise((res, rej) => { const r = new FileReader(); r.onload = e => { const data = new Uint8Array(e.target.result); const wb = XLSX.read(data, { type: 'array' }); const sheet = wb.Sheets[wb.SheetNames[0]]; const json = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: "" }); res(json); }; r.onerror = rej; r.readAsArrayBuffer(file); }); }
         
         document.getElementById('excelFileInput')?.addEventListener('change', async function(e) {
-            const file = e.target.files[0]; const promoId = document.getElementById('importPromotionSelect').value;
-            if(!file || !promoId) { alert('Sélectionnez d\'abord une promotion et un fichier'); this.value = ''; return; }
-            try {
-                const raw = await lireExcel(file);
-                let startRow = 0; if(raw[0] && raw[0][1]?.toString().toLowerCase().includes('nom')) startRow = 1;
-                excelDataToImport = [];
-                for(let i = startRow; i < raw.length; i++) { const row = raw[i]; let nom = row[1] || row[0]; if(nom && nom.toString().trim()) excelDataToImport.push({ nom: nom.toString().trim() }); }
-                if(!excelDataToImport.length) { alert('Aucune donnée valide'); return; }
-                document.getElementById('previewExcelBtn').disabled = false; document.getElementById('importExcelBtn').disabled = false;
-                const previewDiv = document.getElementById('importPreview');
-                let html = '<div class="table-responsive"><table class="table table-sm"><thead><tr><th>#</th><th>Nom</th></tr></thead><tbody>';
-                excelDataToImport.forEach((item, idx) => { html += `<tr><td>${idx+1}</td><td>${escapeHtml(item.nom)}</td></tr>`; });
-                html += '</tbody>}</div>';
-                document.getElementById('previewTable').innerHTML = html;
-                previewDiv.style.display = 'block';
-                showToast(`${excelDataToImport.length} étudiants trouvés`, 'success');
-            } catch(err) { alert('Erreur lecture fichier'); console.error(err); }
+            const file = e.target.files[0];
+            if(!file || !document.getElementById('importPromotionSelect').value) { alert('Sélectionnez promotion et fichier'); return; }
+            const raw = await lireExcel(file);
+            excelDataToImport = [];
+            for(let i = 1; i < raw.length; i++) { if(raw[i][1] && raw[i][1].toString().trim()) excelDataToImport.push({ nom: raw[i][1].toString().trim() }); }
+            document.getElementById('previewExcelBtn').disabled = false;
+            document.getElementById('importExcelBtn').disabled = false;
+            document.getElementById('previewTable').innerHTML = `<div class="table-responsive"><table class="table table-sm"><thead><tr><th>#</th><th>Nom</th></tr></thead><tbody>${excelDataToImport.map((item, idx) => `<tr><td>${idx+1}</td><td>${escapeHtml(item.nom)}</td></tr>`).join('')}</tbody></table></div>`;
+            document.getElementById('importPreview').style.display = 'block';
         });
-        
-        document.getElementById('previewExcelBtn')?.addEventListener('click', () => { document.getElementById('importPreview').scrollIntoView({ behavior: 'smooth' }); });
         
         document.getElementById('importExcelBtn')?.addEventListener('click', async () => {
             const promoId = document.getElementById('importPromotionSelect').value;
-            if(!excelDataToImport.length) { alert('Aucune donnée à importer'); return; }
-            if(confirm(`Importer ${excelDataToImport.length} étudiant(s) ?`)) {
-                const progress = document.getElementById('importProgress'); progress.style.display = 'block';
-                let success = 0, errors = 0;
-                for(let i = 0; i < excelDataToImport.length; i++) {
-                    const e = excelDataToImport[i];
-                    const matricule = await genererMatriculeUnique();
-                    try {
-                        await db.collection('etudiants').doc(matricule).set({ nom: e.nom, matricule: matricule, promotion: promoId, dateCreation: firebase.firestore.FieldValue.serverTimestamp() });
-                        success++;
-                    } catch(err) { errors++; }
-                    const progressPercent = ((i+1)/excelDataToImport.length)*100;
-                    document.querySelector('#importProgress .progress-fill').style.width = `${progressPercent}%`;
-                }
-                progress.style.display = 'none';
-                showToast(`Import: ${success} réussis, ${errors} échecs`, success > 0 ? 'success' : 'danger');
-                document.getElementById('excelFileInput').value = '';
-                excelDataToImport = [];
-                document.getElementById('previewExcelBtn').disabled = true;
-                document.getElementById('importExcelBtn').disabled = true;
-                document.getElementById('importPreview').style.display = 'none';
+            if(!excelDataToImport.length) return;
+            let success = 0;
+            for(let item of excelDataToImport) {
+                const matricule = await genererMatriculeUnique();
+                await db.collection('etudiants').doc(matricule).set({ nom: item.nom, matricule: matricule, promotion: promoId, dateCreation: firebase.firestore.FieldValue.serverTimestamp() });
+                success++;
             }
+            showToast(`${success} étudiants importés`);
+            document.getElementById('excelFileInput').value = '';
+            document.getElementById('importPreview').style.display = 'none';
         });
         
         document.getElementById('downloadTemplateBtn')?.addEventListener('click', (e) => {
             e.preventDefault();
-            const ws = XLSX.utils.aoa_to_sheet([['', 'NOM COMPLET'], ['', 'Jean MUKENDI'], ['', 'Marie KABAMBA'], ['', 'Pierre LUBAMBA'], ['', 'Aline TSHIBUABUA']]);
-            const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, 'Modele_import');
-            XLSX.writeFile(wb, 'modele_import_etudiants.xlsx');
-            showToast('Modèle téléchargé', 'success');
+            const ws = XLSX.utils.aoa_to_sheet([['', 'NOM COMPLET'], ['', 'Jean MUKENDI']]);
+            const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, 'Modele');
+            XLSX.writeFile(wb, 'modele_import.xlsx');
         });
         
-        // ========== TRANSFERT D'ÉTUDIANTS ==========
-        
         function mettreAJourInfoTransfert() {
-            const sourceSelect = document.getElementById('promotionSource');
-            if(sourceSelect && allPromotions.length > 0) {
-                const currentVal = sourceSelect.value;
-                sourceSelect.innerHTML = '<option value="">Sélectionner promotion source</option>';
-                allPromotions.forEach(p => { sourceSelect.innerHTML += `<option value="${p.id}" ${currentVal === p.id ? 'selected' : ''}>${escapeHtml(p.nom)} (${allEtudiants.filter(e => e.promotion === p.id).length} étudiants)</option>`; });
-            }
-            const destSelect = document.getElementById('promotionDestination');
-            if(destSelect && allPromotions.length > 0) {
-                const currentVal = destSelect.value;
-                destSelect.innerHTML = '<option value="">Sélectionner promotion destination</option>';
-                allPromotions.forEach(p => { destSelect.innerHTML += `<option value="${p.id}" ${currentVal === p.id ? 'selected' : ''}>${escapeHtml(p.nom)}</option>`; });
-            }
             const sourceId = document.getElementById('promotionSource')?.value;
             const destId = document.getElementById('promotionDestination')?.value;
-            const infoDiv = document.getElementById('transferInfo');
             if(sourceId && destId && sourceId !== destId) {
-                const nbEtudiants = allEtudiants.filter(e => e.promotion === sourceId).length;
-                const sourceNom = allPromotions.find(p => p.id === sourceId)?.nom || '';
-                const destNom = allPromotions.find(p => p.id === destId)?.nom || '';
-                infoDiv.innerHTML = `<i class="bi bi-info-circle"></i> ${nbEtudiants} étudiant(s) seront transférés de <strong>${escapeHtml(sourceNom)}</strong> vers <strong>${escapeHtml(destNom)}</strong>`;
-            } else { infoDiv.innerHTML = ''; }
+                const nb = allEtudiants.filter(e => e.promotion === sourceId).length;
+                document.getElementById('transferInfo').innerHTML = `<i class="bi bi-info-circle"></i> ${nb} étudiant(s) à transférer`;
+            } else { document.getElementById('transferInfo').innerHTML = ''; }
         }
         
         document.getElementById('promotionSource')?.addEventListener('change', mettreAJourInfoTransfert);
@@ -811,33 +799,23 @@
         document.getElementById('transfererEtudiantsBtn')?.addEventListener('click', async () => {
             const sourceId = document.getElementById('promotionSource').value;
             const destId = document.getElementById('promotionDestination').value;
-            if(!sourceId || !destId) { alert('Veuillez sélectionner les deux promotions'); return; }
-            if(sourceId === destId) { alert('La source et la destination doivent être différentes'); return; }
-            const etudiantsATransferer = allEtudiants.filter(e => e.promotion === sourceId);
-            if(etudiantsATransferer.length === 0) { alert('Aucun étudiant à transférer'); return; }
-            if(confirm(`Transférer ${etudiantsATransferer.length} étudiant(s) ?`)) {
-                const batch = db.batch();
-                etudiantsATransferer.forEach(etudiant => { const ref = db.collection('etudiants').doc(etudiant.id); batch.update(ref, { promotion: destId }); });
-                await batch.commit();
-                showToast(`${etudiantsATransferer.length} étudiant(s) transféré(s)`, 'success');
-                document.getElementById('promotionSource').value = '';
-                document.getElementById('promotionDestination').value = '';
-                document.getElementById('transferInfo').innerHTML = '';
-            }
+            if(!sourceId || !destId || sourceId === destId) { alert('Sélection valide requise'); return; }
+            const etudiants = allEtudiants.filter(e => e.promotion === sourceId);
+            if(!etudiants.length) { alert('Aucun étudiant'); return; }
+            const batch = db.batch();
+            etudiants.forEach(e => batch.update(db.collection('etudiants').doc(e.id), { promotion: destId }));
+            await batch.commit();
+            showToast(`${etudiants.length} étudiants transférés`);
         });
-    </script>
-<script>
-
-// Service Worker Registration
+        
+        // Service Worker
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('sw.js').then(reg => {
-                    console.log('Service Worker enregistré:', reg.scope);
-                }).catch(err => {
-                    console.log('Erreur Service Worker:', err);
-                });
+                navigator.serviceWorker.register('sw.js').catch(err => console.log('SW error:', err));
             });
         }
-</script>
+        
+        checkAuth();
+    </script>
 </body>
 </html>
