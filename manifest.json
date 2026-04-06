@@ -2,12 +2,12 @@
   "name": "unilu admin - Faculté Agronomique",
   "short_name": "super admin",
   "description": "Application de gestion des operation complet pour la Faculté Agronomique",
-  "start_url": "login-doyen.html",
+  "start_url": "index.html",
   "display": "standalone",
   "theme_color": "#003366",
   "background_color": "#003366",
   "orientation": "portrait",
-  "scope": "index.html",
+  "scope": "/",
   "icons": [
     {
       "src": "icon-72x72.png",
