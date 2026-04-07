@@ -533,12 +533,13 @@ chargerPromotionsTransfert();
             });
             
             db.collection('etudiants').onSnapshot(snapshot => {
-                allEtudiants = [];
-                snapshot.forEach(doc => allEtudiants.push({ id: doc.id, ...doc.data() }));
-                afficherBoutonsPromotions();
-                afficherEtudiantsParPromotion(currentSelectedPromotion);
-                mettreAJourInfoTransfert();
-            });
+    allEtudiants = [];
+    snapshot.forEach(doc => allEtudiants.push({ id: doc.id, ...doc.data() }));
+    afficherBoutonsPromotions();
+    afficherEtudiantsParPromotion(currentSelectedPromotion);
+    mettreAJourInfoTransfert();
+    afficherPromotionsListe(); // AJOUTEZ CETTE LIGNE pour rafraîchir
+});
             
             db.collection('fiches').onSnapshot(snapshot => {
                 allFiches = [];
@@ -582,20 +583,43 @@ chargerPromotionsTransfert();
             container.innerHTML = html;
         }
         
-        function afficherPromotionsListe() {
-            const container = document.getElementById('promotionsListe');
-            if(!container) return;
-            if(allPromotions.length === 0) { container.innerHTML = '<div class="alert alert-info">Aucune promotion</div>'; return; }
-            let html = '<div class="table-responsive"><table class="table table-sm table-bordered"><thead><tr><th>Nom</th><th>Capacité</th><th>Étudiants</th><th>Actions</th></tr></thead><tbody>';
-            allPromotions.forEach(p => {
-                const count = allEtudiants.filter(e => e.promotion === p.id).length;
-                html += `<tr id="promo-${p.id}"><td><strong>${escapeHtml(p.nom)}</strong></td><td>${p.capacite || '-'}</td><td>${count}</td>
-                <td><button class="btn btn-sm btn-warning-custom" onclick="modifierPromotion('${p.id}')">Modifier</button>
-                <button class="btn btn-sm btn-danger-custom" onclick="supprimerPromotion('${p.id}')">Supprimer</button></td></tr>`;
-            });
-            html += '</tbody>}</div>';
-            container.innerHTML = html;
+       function afficherPromotionsListe() {
+    const container = document.getElementById('promotionsListe');
+    if(!container) return;
+    
+    if(allPromotions.length === 0) { 
+        container.innerHTML = '<div class="alert alert-info">Aucune promotion</div>'; 
+        return; 
+    }
+    
+    let html = '<div class="table-responsive"><table class="table table-sm table-bordered"><thead>';
+    html += '<tr><th>Nom</th><th>Capacité</th><th>Étudiants</th><th>Actions</th></tr>';
+    html += '</thead><tbody>';
+    
+    allPromotions.forEach(p => {
+        // Compter les étudiants de cette promotion
+        let count = 0;
+        if(allEtudiants && allEtudiants.length > 0) {
+            count = allEtudiants.filter(e => {
+                // Vérifier si la promotion correspond (par ID ou par nom)
+                return e.promotion === p.id || e.promotion === p.nom;
+            }).length;
         }
+        
+        html += `<tr id="promo-${p.id}">`;
+        html += `<td><strong>${escapeHtml(p.nom)}</strong></td>`;
+        html += `<td>${p.capacite || '-'}</td>`;
+        html += `<td><span class="badge ${count > 0 ? 'bg-primary' : 'bg-secondary'}">${count}</span></td>`;
+        html += `<td>
+            <button class="btn btn-sm btn-warning-custom" onclick="modifierPromotion('${p.id}')">Modifier</button>
+            <button class="btn btn-sm btn-danger-custom" onclick="supprimerPromotion('${p.id}')">Supprimer</button>
+        </td>`;
+        html += `</tr>`;
+    });
+    
+    html += '</tbody></table></div>';
+    container.innerHTML = html;
+}
         
         function afficherFichesListe() {
             const container = document.getElementById('fichesListe');
