@@ -648,7 +648,95 @@ chargerPromotionsTransfert();
         window.supprimerAnnee = async (id) => { if(confirm('Supprimer ?')) await db.collection('anneesAcademiques').doc(id).delete(); };
         window.modifierCompte = async (id) => { const newNom = prompt('Nouveau nom'); if(newNom) await db.collection('utilisateurs').doc(id).update({ nomComplet: newNom }); };
         window.supprimerCompte = async (id) => { if(confirm('Supprimer ?')) await db.collection('utilisateurs').doc(id).delete(); };
-        window.modifierPromotion = async (id) => { const newNom = prompt('Nouveau nom'); if(newNom) await db.collection('promotions').doc(id).update({ nom: newNom }); };
+        // Remplacer l'ancienne fonction modifierPromotion par celle-ci
+window.modifierPromotion = async (id) => {
+    // Récupérer la promotion à modifier
+    const promotion = allPromotions.find(p => p.id === id);
+    if (!promotion) {
+        showToast('Promotion non trouvée', 'danger');
+        return;
+    }
+    
+    // Créer un modal de modification
+    const modalHtml = `
+        <div id="modifyPromoModal" class="modal" style="display: block; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 10000;">
+            <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 30px; border-radius: 15px; width: 90%; max-width: 500px; box-shadow: 0 10px 40px rgba(0,0,0,0.2);">
+                <h4 class="mb-4"><i class="bi bi-pencil-square"></i> Modifier la promotion</h4>
+                <form id="modifyPromoForm">
+                    <div class="mb-3">
+                        <label class="form-label">Nom de la promotion</label>
+                        <input type="text" class="form-control" id="modifyPromoNom" value="${escapeHtml(promotion.nom)}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Capacité</label>
+                        <input type="number" class="form-control" id="modifyPromoCapacite" value="${promotion.capacite || ''}" required>
+                    </div>
+                    <div class="d-flex gap-2 justify-content-end">
+                        <button type="button" class="btn btn-secondary" onclick="fermerModalPromo()">Annuler</button>
+                        <button type="submit" class="btn btn-warning-custom">Enregistrer</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    `;
+    
+    // Ajouter le modal au body
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+    
+    // Gérer la soumission du formulaire
+    const form = document.getElementById('modifyPromoForm');
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const nouveauNom = document.getElementById('modifyPromoNom').value.trim();
+        const nouvelleCapacite = parseInt(document.getElementById('modifyPromoCapacite').value);
+        
+        if(!nouveauNom) {
+            showToast('Le nom est requis', 'danger');
+            return;
+        }
+        
+        if(isNaN(nouvelleCapacite) || nouvelleCapacite < 0) {
+            showToast('Capacité invalide', 'danger');
+            return;
+        }
+        
+        // Vérifier si le nouveau nom existe déjà (optionnel)
+        const nomExiste = allPromotions.some(p => p.id !== id && p.nom.toLowerCase() === nouveauNom.toLowerCase());
+        if(nomExiste) {
+            showToast('Ce nom de promotion existe déjà', 'danger');
+            return;
+        }
+        
+        try {
+            await db.collection('promotions').doc(id).update({
+                nom: nouveauNom,
+                capacite: nouvelleCapacite
+            });
+            
+            showToast('Promotion modifiée avec succès', 'success');
+            fermerModalPromo();
+        } catch(error) {
+            console.error(error);
+            showToast('Erreur lors de la modification', 'danger');
+        }
+    });
+};
+
+// Fonction pour fermer le modal
+window.fermerModalPromo = () => {
+    const modal = document.getElementById('modifyPromoModal');
+    if(modal) {
+        modal.remove();
+    }
+};
+
+// Fermer le modal en cliquant à l'extérieur
+document.addEventListener('click', (e) => {
+    if(e.target.id === 'modifyPromoModal') {
+        fermerModalPromo();
+    }
+});
         window.supprimerPromotion = async (id) => {
             const nbEtudiants = allEtudiants.filter(e => e.promotion === id).length;
             if(nbEtudiants > 0) { alert(`Impossible: ${nbEtudiants} étudiant(s) lié(s)`); return; }
